@@ -4,24 +4,22 @@ import HTML from "./index.html";
 const DEFAULT_ADMIN = "saintezz7";
 const sessions = new Map();
 
+// Баланс "на складе" (в памяти; при перезапуске сбрасывается)
+let warehouseBalance = null; // null → игрок видит "??"
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const ADMIN_USERNAME = env.ADMIN_USERNAME || DEFAULT_ADMIN;
 
-    // --- API: кто я? ---
     if (url.pathname === "/api/me") {
-      const cookie = request.headers.get("Cookie") || "";
-      const sessionId = getCookie(cookie, "session");
-      const session = sessionId ? sessions.get(sessionId) : null;
-
+      const session = getSession(request);
       if (session && session.username === ADMIN_USERNAME) {
         return json({ isAdmin: true, username: session.username });
       }
       return json({ isAdmin: false, username: null });
     }
 
-    // --- API: вход админа (только по username) ---
     if (url.pathname === "/api/login" && request.method === "POST") {
       const body = await request.json().catch(() => ({}));
       const username = (body.username || "").trim().replace(/^@/, "");
@@ -40,11 +38,9 @@ export default {
       return json({ ok: false, error: "Доступ только для @" + ADMIN_USERNAME }, 403);
     }
 
-    // --- API: выход ---
     if (url.pathname === "/api/logout") {
-      const cookie = request.headers.get("Cookie") || "";
-      const sessionId = getCookie(cookie, "session");
-      if (sessionId) sessions.delete(sessionId);
+      const session = getSession(request);
+      if (session) sessions.delete(session.id);
       return new Response(JSON.stringify({ ok: true }), {
         headers: {
           "Content-Type": "application/json",
@@ -53,19 +49,33 @@ export default {
       });
     }
 
-    // --- API: данные магазина ---
     if (url.pathname === "/api/shop") {
-      return json({ balance: null }); // null → игрок увидит "??"
+      return json({ balance: warehouseBalance });
     }
 
-    // --- Статика: отдаём index.html ---
+    if (url.pathname === "/api/set-balance" && request.method === "POST") {
+      const session = getSession(request);
+      if (!session || session.username !== ADMIN_USERNAME) {
+        return json({ ok: false, error: "Нет доступа" }, 403);
+      }
+
+      const body = await request.json().catch(() => ({}));
+      const value = Number(body.balance);
+
+      if (!Number.isFinite(value) || value < 0) {
+        return json({ ok: false, error: "Введите неотрицательное число" }, 400);
+      }
+
+      warehouseBalance = Math.floor(value);
+      return json({ ok: true, balance: warehouseBalance });
+    }
+
     return new Response(HTML, {
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });
   },
 };
 
-// --- Вспомогательные функции ---
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -76,4 +86,12 @@ function json(data, status = 200) {
 function getCookie(cookieStr, name) {
   const match = cookieStr.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
   return match ? decodeURIComponent(match[1]) : null;
+}
+
+function getSession(request) {
+  const cookie = request.headers.get("Cookie") || "";
+  const sessionId = getCookie(cookie, "session");
+  if (!sessionId) return null;
+  const session = sessions.get(sessionId);
+  return session ? { ...session, id: sessionId } : null;
 }
