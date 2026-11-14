@@ -37,7 +37,7 @@
     align-items: center;
   }
 
-  /* ===== Главный экран (Лого по центру) ===== */
+  /* ===== Главный экран ===== */
   .main-screen {
     display: flex;
     flex-direction: column;
@@ -71,7 +71,7 @@
     filter: drop-shadow(0 0 30px rgba(212, 180, 90, 0.2));
   }
 
-  /* ===== Баланс (Стеклянная карточка) ===== */
+  /* ===== Баланс ===== */
   .balance-card {
     background: var(--surface);
     backdrop-filter: blur(20px);
@@ -112,6 +112,7 @@
     line-height: 1;
     color: var(--accent);
     text-shadow: 0 0 20px var(--accent-glow);
+    transition: all 0.3s ease;
   }
 
   .coin-icon {
@@ -121,35 +122,35 @@
     animation: spinCoin 8s linear infinite;
   }
 
-  /* ===== Админка (Правый нижний угол) ===== */
-  .admin-fab {
+  /* ===== Кнопка Админ-панели (Снизу по центру) ===== */
+  .admin-fab-bottom {
     position: fixed;
     bottom: 30px;
-    right: 30px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    padding: 16px 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 16px 32px;
     border-radius: 16px;
     font-family: 'Unbounded', sans-serif;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 10px 30px var(--accent-glow);
     transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     z-index: 100;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
 
-  .admin-fab:hover {
-    transform: translateY(-4px) scale(1.02);
+  .admin-fab-bottom:hover {
+    transform: translateX(-50%) translateY(-4px);
+    border-color: var(--accent);
+    color: var(--accent);
     box-shadow: 0 15px 40px var(--accent-glow);
   }
 
-  /* ===== Модальное окно (Стекло) ===== */
+  /* ===== Модальное окно ===== */
   .modal-overlay {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.8);
@@ -187,22 +188,6 @@
     font-size: 24px;
     margin-bottom: 30px;
     color: var(--text);
-  }
-
-  .admin-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .admin-name {
-    font-family: 'Inter', sans-serif;
-    color: var(--accent);
-    font-weight: 600;
-    font-size: 16px;
   }
 
   .form-group {
@@ -262,6 +247,8 @@
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 10px;
   }
 
   .btn-ghost:hover {
@@ -274,7 +261,6 @@
     padding: 14px;
     border-radius: 12px;
     text-align: center;
-    margin-top: 10px;
   }
   .msg.success { background: rgba(74, 222, 128, 0.1); color: var(--success); }
   .msg.error { background: rgba(248, 113, 113, 0.1); color: var(--error); }
@@ -284,11 +270,6 @@
   /* ===== Анимации ===== */
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(40px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
@@ -309,7 +290,7 @@
     .coin-icon { width: 40px; height: 40px; }
     .balance-card { padding: 20px 30px; width: 100%; max-width: 350px; }
     .modal { padding: 24px; }
-    .admin-fab { bottom: 20px; right: 20px; padding: 14px 20px; }
+    .admin-fab-bottom { bottom: 20px; padding: 14px 24px; white-space: nowrap; }
   }
 </style>
 </head>
@@ -330,69 +311,44 @@
   </div>
 </main>
 
-<!-- Кнопка вызова админки -->
-<button class="admin-fab hidden" id="adminFab" onclick="openAdminModal()">
+<!-- Кнопка вызова админки снизу по центру -->
+<button class="admin-fab-bottom" id="adminFab" onclick="openAdminModal()">
   Админ-панель
 </button>
 
-<!-- МОДАЛЬНОЕ ОКНО АДМИНКИ -->
+<!-- МОДАЛЬНОЕ ОКНО -->
 <div class="modal-overlay" id="adminModal">
   <div class="modal">
-    <div class="admin-info">
-      <div>
-        <div style="color: var(--text-dim); font-size: 13px; margin-bottom: 4px;">Вы вошли как</div>
-        <div class="admin-name" id="adminName">@Saintezz7</div>
-      </div>
-      <button class="btn-ghost" onclick="closeAdminModal()">Закрыть</button>
+    <h2 class="modal-title" id="modalTitle">Вход в админ-панель</h2>
+
+    <!-- Экран ввода пароля -->
+    <div class="form-group" id="loginStep">
+      <input type="password" id="adminPassword" class="input" placeholder="Введите пароль" autocomplete="off">
+      <div class="msg error hidden" id="loginError">Неверный пароль</div>
+      <button class="btn-primary" onclick="checkPassword()">Войти</button>
+      <button class="btn-ghost" onclick="closeAdminModal()">Отмена</button>
     </div>
 
-    <div class="form-group">
+    <!-- Экран управления (открывается после ввода пароля) -->
+    <div class="form-group hidden" id="adminStep">
       <label style="color: var(--text-dim); font-size: 14px;">Новое количество монет на складе</label>
-      <div class="input-wrapper">
-        <input type="number" id="newBalance" class="input" min="0" step="1" placeholder="Например: 1000">
-      </div>
-      <button class="btn-primary" onclick="setBalance()">Сохранить изменения</button>
+      <input type="number" id="newBalance" class="input" min="0" step="1" placeholder="Например: 1000">
       <div class="msg success hidden" id="balanceSuccess">Баланс успешно обновлен!</div>
       <div class="msg error hidden" id="balanceError">Ошибка</div>
+      <button class="btn-primary" onclick="setBalance()">Сохранить изменения</button>
+      <button class="btn-ghost" onclick="closeAdminModal()">Закрыть</button>
     </div>
   </div>
 </div>
 
 <script>
-  let isAdmin = false;
-
-  async function init() {
-    const tg = window.Telegram?.WebApp;
-    let initData = "";
-
-    if (tg) {
-      tg.ready();
-      tg.expand();
-      initData = tg.initData;
-    }
-
-    // Проверка на сервере
-    try {
-      const res = await fetch('/api/me', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ initData }),
-      });
-      const data = await res.json();
-      
-      isAdmin = data.isAdmin;
-      
-      if (isAdmin) {
-        document.getElementById('adminFab').classList.remove('hidden');
-        document.getElementById('adminName').textContent = '@' + data.username;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-
-    loadBalance();
+  // Инициализация Telegram (чтобы на весь экран разворачивалось)
+  if (window.Telegram?.WebApp) {
+    window.Telegram.WebApp.ready();
+    window.Telegram.WebApp.expand();
   }
 
+  // Загрузка баланса
   function loadBalance() {
     fetch('/api/shop')
       .then(r => r.json())
@@ -400,7 +356,6 @@
         const balance = (data.balance === null || data.balance === undefined) ? 0 : data.balance;
         const el = document.getElementById('headerBalance');
         
-        // Анимация изменения цифры
         if (el.textContent !== String(balance)) {
           el.style.transform = 'scale(1.1)';
           el.style.color = '#fff';
@@ -417,18 +372,48 @@
 
   function openAdminModal() {
     document.getElementById('adminModal').classList.add('active');
+    // Сбрасываем экраны при открытии
+    document.getElementById('loginStep').classList.remove('hidden');
+    document.getElementById('adminStep').classList.add('hidden');
+    document.getElementById('modalTitle').textContent = 'Вход в админ-панель';
+    document.getElementById('adminPassword').value = '';
+    document.getElementById('loginError').classList.add('hidden');
   }
 
   function closeAdminModal() {
     document.getElementById('adminModal').classList.remove('active');
-    document.getElementById('balanceSuccess').classList.add('hidden');
-    document.getElementById('balanceError').classList.add('hidden');
   }
 
+  // Проверка пароля
+  async function checkPassword() {
+    const pass = document.getElementById('adminPassword').value;
+    const errEl = document.getElementById('loginError');
+    errEl.classList.add('hidden');
+
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pass }),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      // Успех — переключаем экраны
+      document.getElementById('loginStep').classList.add('hidden');
+      document.getElementById('adminStep').classList.remove('hidden');
+      document.getElementById('modalTitle').textContent = 'Управление складом';
+      document.getElementById('newBalance').value = document.getElementById('headerBalance').textContent;
+    } else {
+      errEl.classList.remove('hidden');
+    }
+  }
+
+  // Сохранение баланса
   async function setBalance() {
     const input = document.getElementById('newBalance');
     const okEl  = document.getElementById('balanceSuccess');
     const errEl = document.getElementById('balanceError');
+    const pass  = document.getElementById('adminPassword').value;
 
     okEl.classList.add('hidden');
     errEl.classList.add('hidden');
@@ -443,13 +428,12 @@
     const res = await fetch('/api/set-balance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ balance: value }),
+      body: JSON.stringify({ balance: value, password: pass }),
     });
     const data = await res.json();
 
     if (data.ok) {
       okEl.classList.remove('hidden');
-      input.value = '';
       loadBalance();
       setTimeout(closeAdminModal, 1500);
     } else {
@@ -458,7 +442,8 @@
     }
   }
 
-  init();
+  // Запуск
+  loadBalance();
 </script>
 </body>
 </html>
