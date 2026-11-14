@@ -71,12 +71,12 @@
     filter: drop-shadow(0 8px 24px rgba(0,0,0,0.6));
   }
 
-  /* Счётчик справа от логотипа */
   .header-balance {
     display: flex;
     flex-direction: column;
     gap: 2px;
     padding-bottom: 10px;
+    margin-top: 10px;
   }
 
   .header-balance .label {
@@ -101,42 +101,41 @@
     font-weight: 500;
   }
 
-  /* ===== Вкладки (только Админ-панель, справа сверху) ===== */
+  /* ===== Вкладки ===== */
   .tabs {
     position: fixed;
     top: 24px;
     right: 28px;
     display: flex;
-    gap: 4px;
+    gap: 8px;
     z-index: 100;
-    background: rgba(12, 12, 14, 0.72);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    padding: 4px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
   }
 
   .tab-btn {
-    background: transparent;
-    border: none;
+    background: rgba(12, 12, 14, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
     color: var(--text-dim);
-    padding: 9px 18px;
-    border-radius: 9px;
+    padding: 10px 18px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 13.5px;
     font-weight: 500;
     font-family: inherit;
     letter-spacing: 0.1px;
-    transition: color 0.18s ease, background 0.18s ease;
+    transition: all 0.18s ease;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
-  .tab-btn:hover { color: var(--text); }
-
+  .tab-btn:hover { color: var(--text); border-color: var(--border-strong); }
   .tab-btn.active {
     color: var(--accent);
     background: var(--accent-soft);
+    border-color: rgba(212, 180, 90, 0.3);
   }
 
   /* ===== Панели ===== */
@@ -149,9 +148,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.02) inset,
-      0 24px 60px -20px rgba(0,0,0,0.8);
+    box-shadow: 0 24px 60px -20px rgba(0,0,0,0.8);
     animation: fadeIn 0.35s ease;
   }
 
@@ -160,34 +157,12 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  .panel h2 {
-    font-size: 20px;
-    font-weight: 600;
-    letter-spacing: -0.2px;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-
-  .panel .subtitle {
-    color: var(--text-dim);
-    font-size: 13.5px;
-    margin-bottom: 28px;
-  }
+  .panel h2 { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .panel .subtitle { color: var(--text-dim); font-size: 13.5px; margin-bottom: 28px; }
 
   /* ===== Форма входа ===== */
-  .login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    max-width: 340px;
-  }
-
-  .field-label {
-    color: var(--text-dim);
-    font-size: 13px;
-    letter-spacing: 0.2px;
-    margin-bottom: -6px;
-  }
+  .login-form { display: flex; flex-direction: column; gap: 14px; max-width: 340px; }
+  .field-label { color: var(--text-dim); font-size: 13px; margin-bottom: -6px; }
 
   .input {
     width: 100%;
@@ -198,152 +173,61 @@
     border-radius: 10px;
     font-size: 14.5px;
     font-family: inherit;
-    transition: border-color 0.18s ease, background 0.18s ease;
-    -webkit-appearance: none;
-    appearance: none;
+    transition: all 0.18s ease;
   }
-
   .input::placeholder { color: var(--text-faint); }
-
-  .input:focus {
-    outline: none;
-    border-color: var(--border-strong);
-    background: #141418;
-  }
-
-  .input:focus-visible {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
-  }
+  .input:focus { outline: none; border-color: var(--accent); background: #141418; box-shadow: 0 0 0 3px var(--accent-soft); }
 
   .btn {
-    background: var(--accent);
-    color: #0a0a0a;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
-    font-family: inherit;
-    letter-spacing: 0.1px;
-    cursor: pointer;
-    transition: opacity 0.18s ease, transform 0.1s ease;
-    width: fit-content;
+    background: var(--accent); color: #0a0a0a; border: none; padding: 12px 20px;
+    border-radius: 10px; font-weight: 600; font-size: 14px; font-family: inherit;
+    cursor: pointer; transition: opacity 0.18s ease, transform 0.1s ease; width: fit-content;
   }
-
   .btn:hover { opacity: 0.9; }
   .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
   .btn-ghost {
-    background: transparent;
-    color: var(--text-dim);
-    border: 1px solid var(--border);
-    padding: 10px 18px;
-    border-radius: 10px;
-    font-weight: 500;
-    font-size: 13.5px;
-    font-family: inherit;
-    cursor: pointer;
-    transition: color 0.18s ease, border-color 0.18s ease;
+    background: transparent; color: var(--text-dim); border: 1px solid var(--border);
+    padding: 10px 18px; border-radius: 10px; font-weight: 500; font-size: 13.5px;
+    font-family: inherit; cursor: pointer; transition: all 0.18s ease;
   }
-
-  .btn-ghost:hover {
-    color: var(--text);
-    border-color: var(--border-strong);
-  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border-strong); }
 
   /* ===== Сообщения ===== */
-  .msg {
-    font-size: 13.5px;
-    padding: 10px 14px;
-    border-radius: 9px;
-    border: 1px solid transparent;
-  }
-
-  .msg.error {
-    color: var(--error);
-    background: rgba(248, 113, 113, 0.06);
-    border-color: rgba(248, 113, 113, 0.18);
-  }
-
-  .msg.success {
-    color: var(--success);
-    background: rgba(74, 222, 128, 0.06);
-    border-color: rgba(74, 222, 128, 0.18);
-  }
+  .msg { font-size: 13.5px; padding: 10px 14px; border-radius: 9px; border: 1px solid transparent; }
+  .msg.error { color: var(--error); background: rgba(248, 113, 113, 0.06); border-color: rgba(248, 113, 113, 0.18); }
+  .msg.success { color: var(--success); background: rgba(74, 222, 128, 0.06); border-color: rgba(74, 222, 128, 0.18); }
 
   /* ===== Админ-панель ===== */
-  .admin-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 20px;
-    margin-bottom: 24px;
-    border-bottom: 1px solid var(--border);
-  }
+  .admin-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .admin-header .who { color: var(--text-dim); font-size: 13.5px; }
+  .admin-header .who b { color: var(--accent); font-weight: 600; }
 
-  .admin-header .who {
-    color: var(--text-dim);
-    font-size: 13.5px;
-  }
+  .admin-grid { display: flex; flex-direction: column; gap: 22px; }
+  .stat-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; }
+  .stat-box .label { color: var(--text-dim); font-size: 12.5px; letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 8px; }
+  .stat-box .value { font-size: 32px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .stat-box .value.unknown { color: var(--text-faint); }
 
-  .admin-header .who b {
-    color: var(--accent);
-    font-weight: 600;
-  }
-
-  .admin-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-  }
-
-  .stat-box {
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 22px;
-  }
-
-  .stat-box .label {
-    color: var(--text-dim);
-    font-size: 12.5px;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .stat-box .value {
-    font-size: 32px;
-    font-weight: 600;
-    color: var(--accent);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.8px;
-  }
-
-  .stat-box .value.unknown {
-    color: var(--text-faint);
-    font-weight: 500;
-  }
-
-  .control-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .control-row {
-    display: flex;
-    gap: 10px;
-    align-items: stretch;
-  }
-
+  .control-group { display: flex; flex-direction: column; gap: 12px; }
+  .control-row { display: flex; gap: 10px; align-items: stretch; }
   .control-row .input { flex: 1; }
 
   .hidden { display: none !important; }
 
-  /* ===== Адаптив ===== */
+  /* ===== Модальное окно входа ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+    z-index: 1000; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 30px; width: 100%; max-width: 400px; transform: translateY(10px); transition: transform 0.2s ease;
+  }
+  .modal-overlay.active .modal { transform: translateY(0); }
+  .modal h3 { margin-bottom: 20px; font-size: 18px; font-weight: 600; }
+
   @media (max-width: 720px) {
     .logo { width: 150px; height: 150px; margin-top: -50px; }
     .top-bar { gap: 12px; }
@@ -352,7 +236,6 @@
     .tabs { top: 16px; right: 16px; }
     .tab-btn { padding: 8px 13px; font-size: 12.5px; }
     .panel { margin: 200px 16px 40px; padding: 24px; }
-    .stat-box .value { font-size: 26px; }
   }
 
   @media (max-width: 480px) {
@@ -376,9 +259,13 @@
   </div>
 </header>
 
-<!-- Вкладки (только Админ-панель) -->
+<!-- Вкладки в правом верхнем углу -->
 <nav class="tabs">
-  <button class="tab-btn hidden" data-tab="admin" id="adminTabBtn">Админ-панель</button>
+  <!-- Кнопка "Войти" (видна если не админ) -->
+  <button class="tab-btn" id="loginBtn" onclick="openLoginModal()">Войти</button>
+  
+  <!-- Вкладка "Админ-панель" (видна только после входа) -->
+  <button class="tab-btn hidden" id="adminTabBtn" onclick="toggleAdminPanel()">Админ-панель</button>
 </nav>
 
 <!-- ПАНЕЛЬ: АДМИН-ПАНЕЛЬ -->
@@ -386,39 +273,44 @@
   <h2>Админ-панель</h2>
   <p class="subtitle">Управление балансом склада</p>
 
-  <!-- Вход -->
-  <div id="adminNotLogged" class="login-form">
-    <p class="field-label">Вход для администратора</p>
-    <input type="text" id="loginUsername" class="input" placeholder="@saintezz7" autocomplete="username" spellcheck="false">
-    <button class="btn" onclick="doLogin()">Войти</button>
-    <p class="msg error hidden" id="loginError"></p>
+  <div class="admin-header">
+    <span class="who">Вы вошли как <b id="adminName"></b></span>
+    <button class="btn-ghost" onclick="doLogout()">Выйти</button>
   </div>
 
-  <!-- Контент админки -->
-  <div id="adminLogged" class="hidden">
-    <div class="admin-header">
-      <span class="who">Вы вошли как <b id="adminName"></b></span>
-      <button class="btn-ghost" onclick="doLogout()">Выйти</button>
+  <div class="admin-grid">
+    <div class="stat-box">
+      <div class="label">Текущий баланс на складе</div>
+      <div class="value unknown" id="currentBalance">??</div>
     </div>
 
-    <div class="admin-grid">
-      <div class="stat-box">
-        <div class="label">Текущий баланс на складе</div>
-        <div class="value unknown" id="currentBalance">??</div>
+    <div class="control-group">
+      <p class="field-label">Выставить количество монет</p>
+      <div class="control-row">
+        <input type="number" id="newBalance" class="input" min="0" step="1" placeholder="Введите число">
+        <button class="btn" onclick="setBalance()">Сохранить</button>
       </div>
-
-      <div class="control-group">
-        <p class="field-label">Выставить количество монет</p>
-        <div class="control-row">
-          <input type="number" id="newBalance" class="input" min="0" step="1" placeholder="Введите число">
-          <button class="btn" onclick="setBalance()">Сохранить</button>
-        </div>
-        <p class="msg success hidden" id="balanceSuccess"></p>
-        <p class="msg error hidden" id="balanceError"></p>
-      </div>
+      <p class="msg success hidden" id="balanceSuccess"></p>
+      <p class="msg error hidden" id="balanceError"></p>
     </div>
   </div>
 </section>
+
+<!-- МОДАЛЬНОЕ ОКНО ВХОДА -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <h3>Вход для администратора</h3>
+    <div class="login-form">
+      <p class="field-label">Ваш Telegram username</p>
+      <input type="text" id="loginUsername" class="input" placeholder="@Saintezz7" autocomplete="username" spellcheck="false">
+      <div class="control-row" style="margin-top: 10px;">
+        <button class="btn" onclick="doLogin()">Войти</button>
+        <button class="btn-ghost" onclick="closeLoginModal()">Отмена</button>
+      </div>
+      <p class="msg error hidden" id="loginError"></p>
+    </div>
+  </div>
+</div>
 
 <script>
   let isAdmin = false;
@@ -452,28 +344,45 @@
   }
   loadBalance();
 
-  /* ===== Показ панели админа ===== */
-  document.getElementById('adminTabBtn').addEventListener('click', () => {
-    document.getElementById('panel-admin').classList.remove('hidden');
-    document.getElementById('adminTabBtn').classList.add('active');
-    loadBalance();
-  });
+  /* ===== Модальное окно ===== */
+  function openLoginModal() {
+    document.getElementById('loginModal').classList.add('active');
+    document.getElementById('loginUsername').focus();
+    document.getElementById('loginError').classList.add('hidden');
+  }
+
+  function closeLoginModal() {
+    document.getElementById('loginModal').classList.remove('active');
+    document.getElementById('loginUsername').value = '';
+  }
 
   /* ===== UI админа ===== */
   function updateAdminUI(username) {
-    const tabBtn    = document.getElementById('adminTabBtn');
-    const notLogged = document.getElementById('adminNotLogged');
-    const logged    = document.getElementById('adminLogged');
+    const loginBtn = document.getElementById('loginBtn');
+    const tabBtn   = document.getElementById('adminTabBtn');
 
     if (isAdmin) {
-      notLogged.classList.add('hidden');
-      logged.classList.remove('hidden');
-      document.getElementById('adminName').textContent = '@' + (username || 'saintezz7');
+      loginBtn.classList.add('hidden');
       tabBtn.classList.remove('hidden');
+      document.getElementById('adminName').textContent = '@' + (username || 'Saintezz7');
     } else {
-      notLogged.classList.remove('hidden');
-      logged.classList.add('hidden');
+      loginBtn.classList.remove('hidden');
       tabBtn.classList.add('hidden');
+    }
+  }
+
+  /* ===== Показ панели админа ===== */
+  function toggleAdminPanel() {
+    const panel = document.getElementById('panel-admin');
+    const tabBtn = document.getElementById('adminTabBtn');
+    
+    if (panel.classList.contains('hidden')) {
+      panel.classList.remove('hidden');
+      tabBtn.classList.add('active');
+      loadBalance();
+    } else {
+      panel.classList.add('hidden');
+      tabBtn.classList.remove('active');
     }
   }
 
@@ -493,7 +402,11 @@
     if (data.ok) {
       isAdmin = true;
       updateAdminUI(username);
+      closeLoginModal();
       loadBalance();
+      // Автоматически открываем панель после входа
+      document.getElementById('panel-admin').classList.remove('hidden');
+      document.getElementById('adminTabBtn').classList.add('active');
     } else {
       errEl.textContent = data.error || 'Ошибка входа';
       errEl.classList.remove('hidden');
