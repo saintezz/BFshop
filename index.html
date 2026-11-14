@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrainrotFarmShop</title>
 <style>
-  /* ===== База ===== */
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
   :root {
@@ -38,7 +37,6 @@
     overflow-x: hidden;
   }
 
-  /* Мягкое радиальное свечение на фоне */
   body::before {
     content: "";
     position: fixed;
@@ -50,13 +48,17 @@
     z-index: 0;
   }
 
-  /* ===== Логотип ===== */
+  /* ===== Шапка: логотип + счётчик справа ===== */
   .top-bar {
     position: fixed;
     top: 0;
     left: 50%;
     transform: translateX(-50%);
     z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 0 20px;
     line-height: 0;
   }
 
@@ -69,7 +71,37 @@
     filter: drop-shadow(0 8px 24px rgba(0,0,0,0.6));
   }
 
-  /* ===== Вкладки ===== */
+  /* Счётчик справа от логотипа */
+  .header-balance {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-bottom: 10px;
+  }
+
+  .header-balance .label {
+    color: var(--text-dim);
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .header-balance .value {
+    color: var(--accent);
+    font-size: 26px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .header-balance .value.unknown {
+    color: var(--text-faint);
+    font-weight: 500;
+  }
+
+  /* ===== Вкладки (только Админ-панель, справа сверху) ===== */
   .tabs {
     position: fixed;
     top: 24px;
@@ -112,7 +144,7 @@
     position: relative;
     z-index: 1;
     max-width: 640px;
-    margin: 230px auto 60px;
+    margin: 240px auto 60px;
     padding: 36px;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -140,36 +172,6 @@
     color: var(--text-dim);
     font-size: 13.5px;
     margin-bottom: 28px;
-  }
-
-  /* ===== Баланс игрока ===== */
-  .balance-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    padding: 20px 22px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-  }
-
-  .balance-row .label {
-    color: var(--text-dim);
-    font-size: 13.5px;
-    letter-spacing: 0.2px;
-  }
-
-  .balance-row .value {
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--accent);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.5px;
-  }
-
-  .balance-row .value.unknown {
-    color: var(--text-faint);
-    font-weight: 500;
   }
 
   /* ===== Форма входа ===== */
@@ -339,20 +341,24 @@
 
   .control-row .input { flex: 1; }
 
-  /* ===== Утилиты ===== */
   .hidden { display: none !important; }
 
   /* ===== Адаптив ===== */
   @media (max-width: 720px) {
     .logo { width: 150px; height: 150px; margin-top: -50px; }
+    .top-bar { gap: 12px; }
+    .header-balance .value { font-size: 20px; }
+    .header-balance .label { font-size: 11px; }
     .tabs { top: 16px; right: 16px; }
     .tab-btn { padding: 8px 13px; font-size: 12.5px; }
     .panel { margin: 200px 16px 40px; padding: 24px; }
-    .balance-row .value { font-size: 24px; }
     .stat-box .value { font-size: 26px; }
   }
 
   @media (max-width: 480px) {
+    .top-bar { gap: 8px; padding: 0 10px; }
+    .logo { width: 120px; height: 120px; margin-top: -40px; }
+    .header-balance .value { font-size: 18px; }
     .tabs { left: 16px; right: 16px; justify-content: center; }
     .control-row { flex-direction: column; }
     .btn { width: 100%; }
@@ -361,27 +367,19 @@
 </head>
 <body>
 
-<!-- Логотип -->
-<div class="top-bar">
+<!-- Шапка: логотип + счётчик справа -->
+<header class="top-bar">
   <img src="https://raw.githubusercontent.com/saintezz/BFshop/main/LOGO.png" alt="BrainrotFarmShop" class="logo">
-</div>
+  <div class="header-balance">
+    <span class="label">Монет на складе</span>
+    <span class="value unknown" id="headerBalance">??</span>
+  </div>
+</header>
 
-<!-- Вкладки -->
+<!-- Вкладки (только Админ-панель) -->
 <nav class="tabs">
-  <button class="tab-btn active" data-tab="shop">Магазин</button>
   <button class="tab-btn hidden" data-tab="admin" id="adminTabBtn">Админ-панель</button>
 </nav>
-
-<!-- ПАНЕЛЬ: МАГАЗИН -->
-<section class="panel" id="panel-shop">
-  <h2>Магазин</h2>
-  <p class="subtitle">Ассортимент и баланс на складе</p>
-
-  <div class="balance-row">
-    <span class="label">Монет на складе</span>
-    <span class="value unknown" id="playerBalance">??</span>
-  </div>
-</section>
 
 <!-- ПАНЕЛЬ: АДМИН-ПАНЕЛЬ -->
 <section class="panel hidden" id="panel-admin">
@@ -431,7 +429,7 @@
     .then(data => {
       isAdmin = data.isAdmin;
       updateAdminUI(data.username);
-      if (isAdmin) loadBalance();
+      loadBalance();
     });
 
   /* ===== Баланс ===== */
@@ -439,14 +437,13 @@
     fetch('/api/shop')
       .then(r => r.json())
       .then(data => {
-        const playerEl = document.getElementById('playerBalance');
-        const adminEl  = document.getElementById('currentBalance');
-
         const isEmpty = data.balance === null || data.balance === undefined;
 
-        playerEl.textContent = isEmpty ? '??' : data.balance;
-        playerEl.classList.toggle('unknown', isEmpty);
+        const headerEl = document.getElementById('headerBalance');
+        headerEl.textContent = isEmpty ? '??' : data.balance;
+        headerEl.classList.toggle('unknown', isEmpty);
 
+        const adminEl = document.getElementById('currentBalance');
         if (adminEl) {
           adminEl.textContent = isEmpty ? '??' : data.balance;
           adminEl.classList.toggle('unknown', isEmpty);
@@ -455,31 +452,16 @@
   }
   loadBalance();
 
-  /* ===== Вкладки ===== */
-  document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const tab = btn.dataset.tab;
-      const shopPanel  = document.getElementById('panel-shop');
-      const adminPanel = document.getElementById('panel-admin');
-
-      if (tab === 'shop') {
-        shopPanel.classList.remove('hidden');
-        adminPanel.classList.add('hidden');
-        loadBalance();
-      } else if (tab === 'admin' && isAdmin) {
-        shopPanel.classList.add('hidden');
-        adminPanel.classList.remove('hidden');
-        loadBalance();
-      }
-    });
+  /* ===== Показ панели админа ===== */
+  document.getElementById('adminTabBtn').addEventListener('click', () => {
+    document.getElementById('panel-admin').classList.remove('hidden');
+    document.getElementById('adminTabBtn').classList.add('active');
+    loadBalance();
   });
 
   /* ===== UI админа ===== */
   function updateAdminUI(username) {
-    const tabBtn   = document.getElementById('adminTabBtn');
+    const tabBtn    = document.getElementById('adminTabBtn');
     const notLogged = document.getElementById('adminNotLogged');
     const logged    = document.getElementById('adminLogged');
 
@@ -523,20 +505,16 @@
     await fetch('/api/logout');
     isAdmin = false;
     updateAdminUI(null);
-
-    // Возвращаемся на вкладку «Магазин»
-    document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
-    document.querySelector('.tab-btn[data-tab="shop"]').classList.add('active');
-    document.getElementById('panel-shop').classList.remove('hidden');
     document.getElementById('panel-admin').classList.add('hidden');
+    document.getElementById('adminTabBtn').classList.remove('active');
     loadBalance();
   }
 
   /* ===== Установка баланса ===== */
   async function setBalance() {
-    const input    = document.getElementById('newBalance');
-    const okEl     = document.getElementById('balanceSuccess');
-    const errEl    = document.getElementById('balanceError');
+    const input = document.getElementById('newBalance');
+    const okEl  = document.getElementById('balanceSuccess');
+    const errEl = document.getElementById('balanceError');
 
     okEl.classList.add('hidden');
     errEl.classList.add('hidden');
