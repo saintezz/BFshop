@@ -2,286 +2,376 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>BrainrotFarmShop</title>
-<!-- Подключаем скрипт Telegram WebApp -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
   :root {
-    --bg: #050505;
-    --surface: #0c0c0e;
-    --surface-2: #111114;
-    --border: #1c1c20;
-    --border-strong: #2a2a30;
-    --text: #e8e8ea;
+    --bg: #000000;
+    --surface: rgba(20, 20, 24, 0.6);
+    --border: rgba(255, 255, 255, 0.08);
+    --text: #ffffff;
     --text-dim: #8a8a92;
-    --text-faint: #55555c;
     --accent: #d4b45a;
-    --accent-soft: rgba(212, 180, 90, 0.08);
+    --accent-glow: rgba(212, 180, 90, 0.3);
     --success: #4ade80;
     --error: #f87171;
-    --radius: 12px;
-    --radius-lg: 18px;
   }
 
-  html, body { height: 100%; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: var(--bg);
+    background-color: var(--bg);
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(212, 180, 90, 0.1) 0%, transparent 50%),
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
     color: var(--text);
-    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    font-size: 15px;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
+    font-family: 'Inter', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212, 180, 90, 0.06), transparent 60%),
-      radial-gradient(ellipse 60% 40% at 100% 100%, rgba(212, 180, 90, 0.03), transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ===== Шапка: ЛЕВЫЙ ВЕРХНИЙ УГОЛ ===== */
-  .top-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 15px 20px;
-    line-height: 0;
-  }
-
-  .logo {
-    width: 120px;
-    height: 120px;
-    object-fit: contain;
-    display: block;
-    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.6));
-  }
-
-  .header-balance {
     display: flex;
     flex-direction: column;
-    gap: 0px;
-    padding-bottom: 0;
+    align-items: center;
   }
 
-  .header-balance .label {
-    color: var(--text-dim);
-    font-size: 11px;
-    letter-spacing: 0.3px;
+  /* ===== Главный экран (Лого по центру) ===== */
+  .main-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100%;
+    padding: 20px;
+    animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .logo-wrapper {
+    position: relative;
+    margin-bottom: 40px;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .logo-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    filter: blur(20px);
+    z-index: -1;
+  }
+
+  .logo-main {
+    width: 280px;
+    height: 280px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 30px rgba(212, 180, 90, 0.2));
+  }
+
+  /* ===== Баланс (Стеклянная карточка) ===== */
+  .balance-card {
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 24px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    transition: transform 0.3s ease;
+  }
+
+  .balance-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .balance-label {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 14px;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    white-space: nowrap;
+    color: var(--text-dim);
   }
 
-  .header-balance .value-row {
+  .balance-value-row {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 16px;
   }
 
-  .header-balance .value {
+  .balance-value {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1;
     color: var(--accent);
-    font-size: 22px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.5px;
-    line-height: 1.1;
+    text-shadow: 0 0 20px var(--accent-glow);
   }
 
   .coin-icon {
-    width: 24px; /* Сделали чуть меньше */
-    height: 24px;
+    width: 56px;
+    height: 56px;
     object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    animation: spinCoin 8s linear infinite;
   }
 
-  /* ===== Вкладка Админа (ПРАВЫЙ НИЖНИЙ УГОЛ) ===== */
-  .admin-tab-bottom {
+  /* ===== Админка (Правый нижний угол) ===== */
+  .admin-fab {
     position: fixed;
-    bottom: 24px;
-    right: 28px;
-    z-index: 100;
-    background: rgba(12, 12, 14, 0.72);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    padding: 12px 24px;
-    border-radius: 12px;
-    cursor: pointer;
+    bottom: 30px;
+    right: 30px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 16px 28px;
+    border-radius: 16px;
+    font-family: 'Unbounded', sans-serif;
     font-size: 14px;
-    font-weight: 500;
-    font-family: inherit;
-    letter-spacing: 0.1px;
-    transition: all 0.18s ease;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 30px var(--accent-glow);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 100;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
 
-  .admin-tab-bottom:hover { color: var(--text); border-color: var(--border-strong); }
-  .admin-tab-bottom.active {
-    color: var(--accent);
-    background: var(--accent-soft);
-    border-color: rgba(212, 180, 90, 0.3);
+  .admin-fab:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 15px 40px var(--accent-glow);
   }
 
-  /* ===== Панели ===== */
-  .panel {
-    position: relative;
-    z-index: 1;
-    max-width: 640px;
-    margin: 120px auto 100px;
-    padding: 36px;
-    background: var(--surface);
+  /* ===== Модальное окно (Стекло) ===== */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+    padding: 20px;
+  }
+
+  .modal-overlay.active {
+    opacity: 1; pointer-events: auto;
+  }
+
+  .modal {
+    background: #0c0c0e;
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: 0 24px 60px -20px rgba(0,0,0,0.8);
-    animation: fadeIn 0.35s ease;
+    border-radius: 24px;
+    padding: 40px;
+    width: 100%;
+    max-width: 500px;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 40px 80px rgba(0,0,0,0.8);
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+  .modal-overlay.active .modal {
+    transform: translateY(0) scale(1);
   }
 
-  .panel h2 { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-  .panel .subtitle { color: var(--text-dim); font-size: 13.5px; margin-bottom: 28px; }
+  .modal-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 24px;
+    margin-bottom: 30px;
+    color: var(--text);
+  }
+
+  .admin-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .admin-name {
+    font-family: 'Inter', sans-serif;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .input-wrapper {
+    position: relative;
+  }
 
   .input {
     width: 100%;
-    background: var(--surface-2);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border);
     color: var(--text);
-    padding: 12px 14px;
-    border-radius: 10px;
-    font-size: 14.5px;
-    font-family: inherit;
-    transition: all 0.18s ease;
+    padding: 20px 24px;
+    border-radius: 16px;
+    font-size: 18px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
   }
-  .input::placeholder { color: var(--text-faint); }
-  .input:focus { outline: none; border-color: var(--accent); background: #141418; box-shadow: 0 0 0 3px var(--accent-soft); }
 
-  .btn {
-    background: var(--accent); color: #0a0a0a; border: none; padding: 12px 20px;
-    border-radius: 10px; font-weight: 600; font-size: 14px; font-family: inherit;
-    cursor: pointer; transition: opacity 0.18s ease, transform 0.1s ease; width: fit-content;
+  .input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: rgba(212, 180, 90, 0.05);
+    box-shadow: 0 0 0 4px var(--accent-glow);
   }
-  .btn:hover { opacity: 0.9; }
-  .btn:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 20px;
+    border-radius: 16px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background: #e5c76b;
+    transform: translateY(-2px);
+  }
+
   .btn-ghost {
-    background: transparent; color: var(--text-dim); border: 1px solid var(--border);
-    padding: 10px 18px; border-radius: 10px; font-weight: 500; font-size: 13.5px;
-    font-family: inherit; cursor: pointer; transition: all 0.18s ease;
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
   }
-  .btn-ghost:hover { color: var(--text); border-color: var(--border-strong); }
 
-  .msg { font-size: 13.5px; padding: 10px 14px; border-radius: 9px; border: 1px solid transparent; }
-  .msg.error { color: var(--error); background: rgba(248, 113, 113, 0.06); border-color: rgba(248, 113, 113, 0.18); }
-  .msg.success { color: var(--success); background: rgba(74, 222, 128, 0.06); border-color: rgba(74, 222, 128, 0.18); }
+  .btn-ghost:hover {
+    color: var(--text);
+    border-color: var(--text-dim);
+  }
 
-  .admin-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
-  .admin-header .who { color: var(--text-dim); font-size: 13.5px; }
-  .admin-header .who b { color: var(--accent); font-weight: 600; }
-
-  .admin-grid { display: flex; flex-direction: column; gap: 22px; }
-  .stat-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; }
-  .stat-box .label { color: var(--text-dim); font-size: 12.5px; letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 8px; }
-  .stat-box .value { font-size: 32px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
-
-  .control-group { display: flex; flex-direction: column; gap: 12px; }
-  .control-row { display: flex; gap: 10px; align-items: stretch; }
-  .control-row .input { flex: 1; }
+  .msg {
+    font-size: 14px;
+    padding: 14px;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 10px;
+  }
+  .msg.success { background: rgba(74, 222, 128, 0.1); color: var(--success); }
+  .msg.error { background: rgba(248, 113, 113, 0.1); color: var(--error); }
 
   .hidden { display: none !important; }
 
-  @media (max-width: 720px) {
-    .logo { width: 90px; height: 90px; }
-    .header-balance .value { font-size: 18px; }
-    .coin-icon { width: 20px; height: 20px; }
-    .header-balance .label { font-size: 10px; }
-    .top-bar { padding: 10px; gap: 8px; }
-    .admin-tab-bottom { bottom: 16px; right: 16px; padding: 10px 16px; font-size: 13px; }
-    .panel { margin: 100px 16px 100px; padding: 24px; }
+  /* ===== Анимации ===== */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+
+  @keyframes spinCoin {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+  }
+
+  /* ===== Адаптив ===== */
+  @media (max-width: 600px) {
+    .logo-main { width: 200px; height: 200px; }
+    .balance-value { font-size: 48px; }
+    .coin-icon { width: 40px; height: 40px; }
+    .balance-card { padding: 20px 30px; width: 100%; max-width: 350px; }
+    .modal { padding: 24px; }
+    .admin-fab { bottom: 20px; right: 20px; padding: 14px 20px; }
   }
 </style>
 </head>
 <body>
 
-<!-- Левый верхний угол: Лого + Баланс -->
-<header class="top-bar">
-  <img src="https://raw.githubusercontent.com/saintezz/BFshop/main/LOGO.png" alt="BrainrotFarmShop" class="logo">
-  <div class="header-balance">
-    <span class="label">Монет на складе</span>
-    <div class="value-row">
-      <span class="value" id="headerBalance">0</span>
+<!-- ГЛАВНЫЙ ЭКРАН -->
+<main class="main-screen">
+  <div class="logo-wrapper">
+    <img src="https://raw.githubusercontent.com/saintezz/BFshop/main/LOGO.png" alt="BrainrotFarmShop" class="logo-main">
+  </div>
+
+  <div class="balance-card">
+    <span class="balance-label">Монет на складе</span>
+    <div class="balance-value-row">
+      <span class="balance-value" id="headerBalance">0</span>
       <img src="https://raw.githubusercontent.com/saintezz/BFshop/main/coin.png" alt="coin" class="coin-icon">
     </div>
   </div>
-</header>
+</main>
 
-<!-- ПАНЕЛЬ: АДМИН-ПАНЕЛЬ (скрыта по умолчанию) -->
-<section class="panel hidden" id="panel-admin">
-  <h2>Админ-панель</h2>
-  <p class="subtitle">Управление балансом склада</p>
-
-  <div class="admin-header">
-    <span class="who">Вы вошли как <b id="adminName"></b></span>
-    <button class="btn-ghost" onclick="doLogout()">Выйти</button>
-  </div>
-
-  <div class="admin-grid">
-    <div class="stat-box">
-      <div class="label">Текущий баланс на складе</div>
-      <div class="value" id="currentBalance">0</div>
-    </div>
-
-    <div class="control-group">
-      <p class="field-label">Выставить количество монет</p>
-      <div class="control-row">
-        <input type="number" id="newBalance" class="input" min="0" step="1" placeholder="Введите число">
-        <button class="btn" onclick="setBalance()">Сохранить</button>
-      </div>
-      <p class="msg success hidden" id="balanceSuccess"></p>
-      <p class="msg error hidden" id="balanceError"></p>
-    </div>
-  </div>
-</section>
-
-<!-- Кнопка Админ-панели (Правый нижний угол, появляется только у админа) -->
-<button class="admin-tab-bottom hidden" id="adminTabBtn" onclick="toggleAdminPanel()">
+<!-- Кнопка вызова админки -->
+<button class="admin-fab hidden" id="adminFab" onclick="openAdminModal()">
   Админ-панель
 </button>
+
+<!-- МОДАЛЬНОЕ ОКНО АДМИНКИ -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal">
+    <div class="admin-info">
+      <div>
+        <div style="color: var(--text-dim); font-size: 13px; margin-bottom: 4px;">Вы вошли как</div>
+        <div class="admin-name" id="adminName">@Saintezz7</div>
+      </div>
+      <button class="btn-ghost" onclick="closeAdminModal()">Закрыть</button>
+    </div>
+
+    <div class="form-group">
+      <label style="color: var(--text-dim); font-size: 14px;">Новое количество монет на складе</label>
+      <div class="input-wrapper">
+        <input type="number" id="newBalance" class="input" min="0" step="1" placeholder="Например: 1000">
+      </div>
+      <button class="btn-primary" onclick="setBalance()">Сохранить изменения</button>
+      <div class="msg success hidden" id="balanceSuccess">Баланс успешно обновлен!</div>
+      <div class="msg error hidden" id="balanceError">Ошибка</div>
+    </div>
+  </div>
+</div>
 
 <script>
   let isAdmin = false;
 
-  /* ===== Инициализация ===== */
   async function init() {
-    // 1. Инициализируем Telegram WebApp
     const tg = window.Telegram?.WebApp;
     let initData = "";
 
     if (tg) {
       tg.ready();
-      tg.expand(); // Разворачиваем на весь экран
-      initData = tg.initData; // Получаем подписанные данные пользователя
+      tg.expand();
+      initData = tg.initData;
     }
 
-    // 2. Проверяем админа на сервере
+    // Проверка на сервере
     try {
       const res = await fetch('/api/me', {
         method: 'POST',
@@ -293,57 +383,48 @@
       isAdmin = data.isAdmin;
       
       if (isAdmin) {
-        // Если админ — показываем кнопку в правом нижнем углу
-        document.getElementById('adminTabBtn').classList.remove('hidden');
+        document.getElementById('adminFab').classList.remove('hidden');
         document.getElementById('adminName').textContent = '@' + data.username;
       }
     } catch (e) {
-      console.error("Ошибка проверки админа:", e);
+      console.error(e);
     }
 
-    // 3. Загружаем баланс
     loadBalance();
   }
 
-  /* ===== Загрузка баланса ===== */
   function loadBalance() {
     fetch('/api/shop')
       .then(r => r.json())
       .then(data => {
         const balance = (data.balance === null || data.balance === undefined) ? 0 : data.balance;
-
-        document.getElementById('headerBalance').textContent = balance;
-        const adminEl = document.getElementById('currentBalance');
-        if (adminEl) adminEl.textContent = balance;
+        const el = document.getElementById('headerBalance');
+        
+        // Анимация изменения цифры
+        if (el.textContent !== String(balance)) {
+          el.style.transform = 'scale(1.1)';
+          el.style.color = '#fff';
+          setTimeout(() => {
+            el.textContent = balance;
+            el.style.transform = 'scale(1)';
+            el.style.color = 'var(--accent)';
+          }, 150);
+        } else {
+          el.textContent = balance;
+        }
       });
   }
 
-  /* ===== Открыть/Закрыть админку ===== */
-  function toggleAdminPanel() {
-    const panel = document.getElementById('panel-admin');
-    const tabBtn = document.getElementById('adminTabBtn');
-    
-    if (panel.classList.contains('hidden')) {
-      panel.classList.remove('hidden');
-      tabBtn.classList.add('active');
-      loadBalance();
-    } else {
-      panel.classList.add('hidden');
-      tabBtn.classList.remove('active');
-    }
+  function openAdminModal() {
+    document.getElementById('adminModal').classList.add('active');
   }
 
-  /* ===== Выход ===== */
-  async function doLogout() {
-    await fetch('/api/logout', { method: 'POST' });
-    isAdmin = false;
-    document.getElementById('panel-admin').classList.add('hidden');
-    document.getElementById('adminTabBtn').classList.add('hidden');
-    document.getElementById('adminTabBtn').classList.remove('active');
-    loadBalance();
+  function closeAdminModal() {
+    document.getElementById('adminModal').classList.remove('active');
+    document.getElementById('balanceSuccess').classList.add('hidden');
+    document.getElementById('balanceError').classList.add('hidden');
   }
 
-  /* ===== Установка баланса ===== */
   async function setBalance() {
     const input = document.getElementById('newBalance');
     const okEl  = document.getElementById('balanceSuccess');
@@ -354,7 +435,7 @@
 
     const value = Number(input.value);
     if (!Number.isFinite(value) || value < 0) {
-      errEl.textContent = 'Введите неотрицательное число';
+      errEl.textContent = 'Введите корректное число';
       errEl.classList.remove('hidden');
       return;
     }
@@ -367,17 +448,16 @@
     const data = await res.json();
 
     if (data.ok) {
-      okEl.textContent = `Баланс обновлён: ${data.balance}`;
       okEl.classList.remove('hidden');
       input.value = '';
       loadBalance();
+      setTimeout(closeAdminModal, 1500);
     } else {
       errEl.textContent = data.error || 'Ошибка';
       errEl.classList.remove('hidden');
     }
   }
 
-  // Запуск
   init();
 </script>
 </body>
