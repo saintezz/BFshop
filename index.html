@@ -23,6 +23,30 @@
   .login-form input { background:#111; border:1px solid #222; color:#fff; padding:12px; border-radius:8px; }
   .login-form button { background:#FFD700; color:#000; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; }
   .error { color:#e74c3c; font-size:14px; }
+  .success { color:#2ecc71; font-size:14px; }
+
+  /* Админ-панель */
+  .admin-grid { display:flex; flex-direction:column; gap:16px; }
+  .admin-field { display:flex; flex-direction:column; gap:8px; max-width:360px; }
+  .admin-field label { color:#aaa; font-size:14px; }
+  .admin-field input {
+    background:#111; border:1px solid #222; color:#fff; padding:12px;
+    border-radius:8px; font-size:16px;
+  }
+  .admin-field input:focus { outline:none; border-color:#FFD700; }
+  .admin-btn {
+    background:#FFD700; color:#000; border:none; padding:12px 20px;
+    border-radius:8px; font-weight:700; cursor:pointer; font-size:15px;
+    width:fit-content;
+  }
+  .admin-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .current-balance-box {
+    background:#111; border:1px solid #222; border-radius:12px;
+    padding:20px; margin-top:8px;
+  }
+  .current-balance-box .label { color:#777; font-size:13px; margin-bottom:6px; }
+  .current-balance-box .value { color:#FFD700; font-size:28px; font-weight:700; }
+  .current-balance-box .value.unknown { color:#666; }
 </style>
 </head>
 <body>
@@ -33,7 +57,7 @@
 
 <div class="tabs">
   <button class="tab-btn active" data-tab="shop">🛒 Магазин</button>
-  <button class="tab-btn" data-tab="coins" id="coinsTabBtn">💰 Показатель монет</button>
+  <button class="tab-btn admin-only" data-tab="admin" id="adminTabBtn">👑 Админ-панель</button>
 </div>
 
 <!-- ПАНЕЛЬ: МАГАЗИН -->
@@ -42,34 +66,76 @@
   <p class="muted">Монет на складе: <span id="playerBalance" class="unknown">??</span></p>
 </div>
 
-<!-- ПАНЕЛЬ: ПОКАЗАТЕЛЬ МОНЕТ (админ) -->
-<div class="panel admin-only" id="panel-coins-admin">
-  <h2>👑 Показатель монет (админ)</h2>
+<!-- ПАНЕЛЬ: АДМИН-ПАНЕЛЬ (только для админа) -->
+<div class="panel admin-only" id="panel-admin">
+  <h2>👑 Админ-панель</h2>
+
+  <!-- Форма входа (если не залогинен) -->
   <div id="adminNotLogged" class="login-form">
     <p class="muted">Войдите как @saintezz7 (пароль не нужен)</p>
     <input type="text" id="loginUsername" placeholder="Введите @saintezz7" autocomplete="username">
     <button onclick="doLogin()">Войти</button>
     <p class="error" id="loginError"></p>
   </div>
+
+  <!-- Контент админки (если залогинен) -->
   <div id="adminLogged" style="display:none;">
-    <p class="muted">Вы вошли как <b id="adminName"></b></p>
-    <div class="coins" id="adminCoins">—</div>
-    <p class="muted">Здесь будет отображаться общий показатель монет по всем игрокам.</p>
-    <button class="tab-btn" onclick="doLogout()" style="margin-top:16px;">Выйти</button>
+    <p class="muted" style="margin-bottom:20px;">
+      Вы вошли как <b id="adminName"></b>
+    </p>
+
+    <div class="admin-grid">
+      <div class="current-balance-box">
+        <div class="label">Текущий баланс на складе</div>
+        <div class="value unknown" id="currentBalance">??</div>
+      </div>
+
+      <div class="admin-field">
+        <label for="newBalance">Выставить количество монет на складе</label>
+        <input type="number" id="newBalance" min="0" step="1" placeholder="Например, 1000">
+        <button class="admin-btn" onclick="setBalance()">Сохранить</button>
+        <p class="success" id="balanceSuccess" style="display:none;"></p>
+        <p class="error" id="balanceError" style="display:none;"></p>
+      </div>
+    </div>
+
+    <button class="tab-btn" onclick="doLogout()" style="margin-top:24px;">Выйти</button>
   </div>
 </div>
 
 <script>
   let isAdmin = false;
 
+  // --- Инициализация ---
   fetch('/api/me').then(r => r.json()).then(data => {
     isAdmin = data.isAdmin;
     updateAdminUI(data.username);
     if (isAdmin) {
-      document.getElementById('coinsTabBtn').textContent = '👑 Показатель монет';
+      document.getElementById('adminTabBtn').style.display = 'inline-block';
+      loadBalance();
     }
   });
 
+  // Загружаем текущий баланс на складе
+  function loadBalance() {
+    fetch('/api/shop').then(r => r.json()).then(data => {
+      const el = document.getElementById('playerBalance');
+      const adminEl = document.getElementById('currentBalance');
+
+      if (data.balance === null || data.balance === undefined) {
+        el.textContent = '??';
+        el.className = 'unknown';
+        if (adminEl) { adminEl.textContent = '??'; adminEl.className = 'value unknown'; }
+      } else {
+        el.textContent = data.balance;
+        el.className = '';
+        if (adminEl) { adminEl.textContent = data.balance + ' 🪙'; adminEl.className = 'value'; }
+      }
+    });
+  }
+  loadBalance();
+
+  // --- Переключение вкладок ---
   document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
@@ -79,30 +145,30 @@
       const tab = btn.dataset.tab;
       if (tab === 'shop') {
         document.getElementById('panel-shop').style.display = 'block';
-      } else if (tab === 'coins') {
-        if (isAdmin) {
-          document.getElementById('panel-coins-admin').classList.add('visible');
-          document.getElementById('panel-coins-admin').style.display = 'block';
-        } else {
-          document.getElementById('panel-shop').style.display = 'block';
-          document.getElementById('playerBalance').textContent = '??';
-        }
+        loadBalance();
+      } else if (tab === 'admin' && isAdmin) {
+        document.getElementById('panel-admin').classList.add('visible');
+        document.getElementById('panel-admin').style.display = 'block';
+        loadBalance();
       }
     });
   });
 
+  // --- UI админа ---
   function updateAdminUI(username) {
     if (isAdmin) {
       document.getElementById('adminNotLogged').style.display = 'none';
       document.getElementById('adminLogged').style.display = 'block';
       document.getElementById('adminName').textContent = '@' + (username || 'saintezz7');
-      document.getElementById('adminCoins').textContent = '1000 🪙';
+      document.getElementById('adminTabBtn').style.display = 'inline-block';
     } else {
       document.getElementById('adminNotLogged').style.display = 'block';
       document.getElementById('adminLogged').style.display = 'none';
+      document.getElementById('adminTabBtn').style.display = 'none';
     }
   }
 
+  // --- Вход ---
   async function doLogin() {
     const username = document.getElementById('loginUsername').value.trim();
     const res = await fetch('/api/login', {
@@ -115,15 +181,58 @@
       isAdmin = true;
       document.getElementById('loginError').textContent = '';
       updateAdminUI(username);
+      loadBalance();
     } else {
       document.getElementById('loginError').textContent = data.error || 'Ошибка входа';
     }
   }
 
+  // --- Выход ---
   async function doLogout() {
     await fetch('/api/logout');
     isAdmin = false;
     updateAdminUI(null);
+    document.getElementById('adminTabBtn').style.display = 'none';
+    // Переключаемся на магазин
+    document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+    document.getElementById('panel-shop').style.display = 'block';
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
+    document.querySelector('.tab-btn[data-tab="shop"]').classList.add('active');
+    loadBalance();
+  }
+
+  // --- Установка баланса (админ) ---
+  async function setBalance() {
+    const input = document.getElementById('newBalance');
+    const successEl = document.getElementById('balanceSuccess');
+    const errorEl = document.getElementById('balanceError');
+
+    successEl.style.display = 'none';
+    errorEl.style.display = 'none';
+
+    const value = Number(input.value);
+    if (!Number.isFinite(value) || value < 0) {
+      errorEl.textContent = 'Введите неотрицательное число';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const res = await fetch('/api/set-balance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ balance: value }),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      successEl.textContent = `Баланс обновлён: ${data.balance} 🪙`;
+      successEl.style.display = 'block';
+      input.value = '';
+      loadBalance();
+    } else {
+      errorEl.textContent = data.error || 'Ошибка';
+      errorEl.style.display = 'block';
+    }
   }
 </script>
 </body>
