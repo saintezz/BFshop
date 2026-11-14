@@ -1,46 +1,52 @@
-// server.js — Cloudflare Worker (API + отдача index.html)
 import HTML from "./index.html";
 
 const DEFAULT_ADMIN = "saintezz7";
-const sessions = new Map();
-
-// Баланс "на складе" (в памяти; при перезапуске сбрасывается)
-let warehouseBalance = null; // null → игрок видит "??"
+const sessions = new Map(); // В памяти (сбрасывается при рестарте)
+let warehouseBalance = 0;   // По умолчанию 0
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const ADMIN_USERNAME = env.ADMIN_USERNAME || DEFAULT_ADMIN;
 
-    if (url.pathname === "/api/me") {
-      const session = getSession(request);
-      if (session && session.username === ADMIN_USERNAME) {
-        return json({ isAdmin: true, username: session.username });
+    // --- API: кто я? (проверка через Telegram initData) ---
+    if (url.pathname === "/api/me" && request.method === "POST") {
+      const body = await request.json().catch(() => ({}));
+      const initData = body.initData;
+
+      if (!initData) return json({ isAdmin: false, username: null });
+
+      // Парсим initData от Telegram
+      const params = new URLSearchParams(initData);
+      const userStr = params.get("user");
+      
+      if (!userStr) return json({ isAdmin: false, username: null });
+
+      try {
+        const user = JSON.parse(userStr);
+        const isAdmin = (user.username || "").toLowerCase() === ADMIN_USERNAME.toLowerCase();
+
+        if (isAdmin) {
+          // Создаём сессию для админа
+          const sessionId = crypto.randomUUID();
+          sessions.set(sessionId, { username: ADMIN_USERNAME, createdAt: Date.now() });
+          
+          return new Response(JSON.stringify({ isAdmin: true, username: user.username }), {
+            headers: {
+              "Content-Type": "application/json",
+              "Set-Cookie": `session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=86400`,
+            },
+          });
+        }
+      } catch (e) {
+        return json({ isAdmin: false, username: null });
       }
+
       return json({ isAdmin: false, username: null });
     }
 
-    if (url.pathname === "/api/login" && request.method === "POST") {
-      const body = await request.json().catch(() => ({}));
-      const username = (body.username || "").trim().replace(/^@/, "");
-
-      if (username === ADMIN_USERNAME) {
-        const sessionId = crypto.randomUUID();
-        sessions.set(sessionId, { username: ADMIN_USERNAME, createdAt: Date.now() });
-
-        return new Response(JSON.stringify({ ok: true }), {
-          headers: {
-            "Content-Type": "application/json",
-            "Set-Cookie": `session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=86400`,
-          },
-        });
-      }
-      return json({ ok: false, error: "Доступ только для @" + ADMIN_USERNAME }, 403);
-    }
-
-    if (url.pathname === "/api/logout") {
-      const session = getSession(request);
-      if (session) sessions.delete(session.id);
+    // --- API: выход ---
+    if (url.pathname === "/api/logout" && request.method === "POST") {
       return new Response(JSON.stringify({ ok: true }), {
         headers: {
           "Content-Type": "application/json",
@@ -49,10 +55,12 @@ export default {
       });
     }
 
+    // --- API: получить баланс ---
     if (url.pathname === "/api/shop") {
       return json({ balance: warehouseBalance });
     }
 
+    // --- API: установить баланс (только админ) ---
     if (url.pathname === "/api/set-balance" && request.method === "POST") {
       const session = getSession(request);
       if (!session || session.username !== ADMIN_USERNAME) {
@@ -70,9 +78,8 @@ export default {
       return json({ ok: true, balance: warehouseBalance });
     }
 
-    return new Response(HTML, {
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
+    // --- Статика ---
+    return new Response(HTML, { headers: { "Content-Type": "text/html; charset=utf-8" } });
   },
 };
 
