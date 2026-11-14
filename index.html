@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrainrotFarmShop</title>
+<!-- Подключаем скрипт Telegram WebApp -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
@@ -48,91 +50,90 @@
     z-index: 0;
   }
 
-  /* ===== Шапка: логотип + счётчик справа ===== */
+  /* ===== Шапка: ЛЕВЫЙ ВЕРХНИЙ УГОЛ ===== */
   .top-bar {
     position: fixed;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
     z-index: 100;
     display: flex;
     align-items: center;
-    gap: 18px;
-    padding: 0 20px;
+    gap: 12px;
+    padding: 15px 20px;
     line-height: 0;
   }
 
   .logo {
-    width: 200px;
-    height: 200px;
+    width: 120px;
+    height: 120px;
     object-fit: contain;
     display: block;
-    margin-top: -70px;
     filter: drop-shadow(0 8px 24px rgba(0,0,0,0.6));
   }
 
   .header-balance {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding-bottom: 10px;
-    margin-top: 10px;
+    gap: 0px;
+    padding-bottom: 0;
   }
 
   .header-balance .label {
     color: var(--text-dim);
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0.3px;
     text-transform: uppercase;
     white-space: nowrap;
   }
 
+  .header-balance .value-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .header-balance .value {
     color: var(--accent);
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.5px;
     line-height: 1.1;
   }
 
-  .header-balance .value.unknown {
-    color: var(--text-faint);
-    font-weight: 500;
+  .coin-icon {
+    width: 24px; /* Сделали чуть меньше */
+    height: 24px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
   }
 
-  /* ===== Вкладки ===== */
-  .tabs {
+  /* ===== Вкладка Админа (ПРАВЫЙ НИЖНИЙ УГОЛ) ===== */
+  .admin-tab-bottom {
     position: fixed;
-    top: 24px;
+    bottom: 24px;
     right: 28px;
-    display: flex;
-    gap: 8px;
     z-index: 100;
-  }
-
-  .tab-btn {
     background: rgba(12, 12, 14, 0.72);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid var(--border);
     color: var(--text-dim);
-    padding: 10px 18px;
-    border-radius: 10px;
+    padding: 12px 24px;
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 13.5px;
+    font-size: 14px;
     font-weight: 500;
     font-family: inherit;
     letter-spacing: 0.1px;
     transition: all 0.18s ease;
-    white-space: nowrap;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
   }
 
-  .tab-btn:hover { color: var(--text); border-color: var(--border-strong); }
-  .tab-btn.active {
+  .admin-tab-bottom:hover { color: var(--text); border-color: var(--border-strong); }
+  .admin-tab-bottom.active {
     color: var(--accent);
     background: var(--accent-soft);
     border-color: rgba(212, 180, 90, 0.3);
@@ -143,7 +144,7 @@
     position: relative;
     z-index: 1;
     max-width: 640px;
-    margin: 240px auto 60px;
+    margin: 120px auto 100px;
     padding: 36px;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -159,10 +160,6 @@
 
   .panel h2 { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
   .panel .subtitle { color: var(--text-dim); font-size: 13.5px; margin-bottom: 28px; }
-
-  /* ===== Форма входа ===== */
-  .login-form { display: flex; flex-direction: column; gap: 14px; max-width: 340px; }
-  .field-label { color: var(--text-dim); font-size: 13px; margin-bottom: -6px; }
 
   .input {
     width: 100%;
@@ -192,12 +189,10 @@
   }
   .btn-ghost:hover { color: var(--text); border-color: var(--border-strong); }
 
-  /* ===== Сообщения ===== */
   .msg { font-size: 13.5px; padding: 10px 14px; border-radius: 9px; border: 1px solid transparent; }
   .msg.error { color: var(--error); background: rgba(248, 113, 113, 0.06); border-color: rgba(248, 113, 113, 0.18); }
   .msg.success { color: var(--success); background: rgba(74, 222, 128, 0.06); border-color: rgba(74, 222, 128, 0.18); }
 
-  /* ===== Админ-панель ===== */
   .admin-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
   .admin-header .who { color: var(--text-dim); font-size: 13.5px; }
   .admin-header .who b { color: var(--accent); font-weight: 600; }
@@ -206,7 +201,6 @@
   .stat-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; }
   .stat-box .label { color: var(--text-dim); font-size: 12.5px; letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 8px; }
   .stat-box .value { font-size: 32px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
-  .stat-box .value.unknown { color: var(--text-faint); }
 
   .control-group { display: flex; flex-direction: column; gap: 12px; }
   .control-row { display: flex; gap: 10px; align-items: stretch; }
@@ -214,61 +208,32 @@
 
   .hidden { display: none !important; }
 
-  /* ===== Модальное окно входа ===== */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
-    z-index: 1000; display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
-  }
-  .modal-overlay.active { opacity: 1; pointer-events: auto; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-    padding: 30px; width: 100%; max-width: 400px; transform: translateY(10px); transition: transform 0.2s ease;
-  }
-  .modal-overlay.active .modal { transform: translateY(0); }
-  .modal h3 { margin-bottom: 20px; font-size: 18px; font-weight: 600; }
-
   @media (max-width: 720px) {
-    .logo { width: 150px; height: 150px; margin-top: -50px; }
-    .top-bar { gap: 12px; }
-    .header-balance .value { font-size: 20px; }
-    .header-balance .label { font-size: 11px; }
-    .tabs { top: 16px; right: 16px; }
-    .tab-btn { padding: 8px 13px; font-size: 12.5px; }
-    .panel { margin: 200px 16px 40px; padding: 24px; }
-  }
-
-  @media (max-width: 480px) {
-    .top-bar { gap: 8px; padding: 0 10px; }
-    .logo { width: 120px; height: 120px; margin-top: -40px; }
+    .logo { width: 90px; height: 90px; }
     .header-balance .value { font-size: 18px; }
-    .tabs { left: 16px; right: 16px; justify-content: center; }
-    .control-row { flex-direction: column; }
-    .btn { width: 100%; }
+    .coin-icon { width: 20px; height: 20px; }
+    .header-balance .label { font-size: 10px; }
+    .top-bar { padding: 10px; gap: 8px; }
+    .admin-tab-bottom { bottom: 16px; right: 16px; padding: 10px 16px; font-size: 13px; }
+    .panel { margin: 100px 16px 100px; padding: 24px; }
   }
 </style>
 </head>
 <body>
 
-<!-- Шапка: логотип + счётчик справа -->
+<!-- Левый верхний угол: Лого + Баланс -->
 <header class="top-bar">
   <img src="https://raw.githubusercontent.com/saintezz/BFshop/main/LOGO.png" alt="BrainrotFarmShop" class="logo">
   <div class="header-balance">
     <span class="label">Монет на складе</span>
-    <span class="value unknown" id="headerBalance">??</span>
+    <div class="value-row">
+      <span class="value" id="headerBalance">0</span>
+      <img src="https://raw.githubusercontent.com/saintezz/BFshop/main/coin.png" alt="coin" class="coin-icon">
+    </div>
   </div>
 </header>
 
-<!-- Вкладки в правом верхнем углу -->
-<nav class="tabs">
-  <!-- Кнопка "Войти" (видна если не админ) -->
-  <button class="tab-btn" id="loginBtn" onclick="openLoginModal()">Войти</button>
-  
-  <!-- Вкладка "Админ-панель" (видна только после входа) -->
-  <button class="tab-btn hidden" id="adminTabBtn" onclick="toggleAdminPanel()">Админ-панель</button>
-</nav>
-
-<!-- ПАНЕЛЬ: АДМИН-ПАНЕЛЬ -->
+<!-- ПАНЕЛЬ: АДМИН-ПАНЕЛЬ (скрыта по умолчанию) -->
 <section class="panel hidden" id="panel-admin">
   <h2>Админ-панель</h2>
   <p class="subtitle">Управление балансом склада</p>
@@ -281,7 +246,7 @@
   <div class="admin-grid">
     <div class="stat-box">
       <div class="label">Текущий баланс на складе</div>
-      <div class="value unknown" id="currentBalance">??</div>
+      <div class="value" id="currentBalance">0</div>
     </div>
 
     <div class="control-group">
@@ -296,82 +261,64 @@
   </div>
 </section>
 
-<!-- МОДАЛЬНОЕ ОКНО ВХОДА -->
-<div class="modal-overlay" id="loginModal">
-  <div class="modal">
-    <h3>Вход для администратора</h3>
-    <div class="login-form">
-      <p class="field-label">Ваш Telegram username</p>
-      <input type="text" id="loginUsername" class="input" placeholder="@Saintezz7" autocomplete="username" spellcheck="false">
-      <div class="control-row" style="margin-top: 10px;">
-        <button class="btn" onclick="doLogin()">Войти</button>
-        <button class="btn-ghost" onclick="closeLoginModal()">Отмена</button>
-      </div>
-      <p class="msg error hidden" id="loginError"></p>
-    </div>
-  </div>
-</div>
+<!-- Кнопка Админ-панели (Правый нижний угол, появляется только у админа) -->
+<button class="admin-tab-bottom hidden" id="adminTabBtn" onclick="toggleAdminPanel()">
+  Админ-панель
+</button>
 
 <script>
   let isAdmin = false;
 
   /* ===== Инициализация ===== */
-  fetch('/api/me')
-    .then(r => r.json())
-    .then(data => {
-      isAdmin = data.isAdmin;
-      updateAdminUI(data.username);
-      loadBalance();
-    });
+  async function init() {
+    // 1. Инициализируем Telegram WebApp
+    const tg = window.Telegram?.WebApp;
+    let initData = "";
 
-  /* ===== Баланс ===== */
+    if (tg) {
+      tg.ready();
+      tg.expand(); // Разворачиваем на весь экран
+      initData = tg.initData; // Получаем подписанные данные пользователя
+    }
+
+    // 2. Проверяем админа на сервере
+    try {
+      const res = await fetch('/api/me', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData }),
+      });
+      const data = await res.json();
+      
+      isAdmin = data.isAdmin;
+      
+      if (isAdmin) {
+        // Если админ — показываем кнопку в правом нижнем углу
+        document.getElementById('adminTabBtn').classList.remove('hidden');
+        document.getElementById('adminName').textContent = '@' + data.username;
+      }
+    } catch (e) {
+      console.error("Ошибка проверки админа:", e);
+    }
+
+    // 3. Загружаем баланс
+    loadBalance();
+  }
+
+  /* ===== Загрузка баланса ===== */
   function loadBalance() {
     fetch('/api/shop')
       .then(r => r.json())
       .then(data => {
-        const isEmpty = data.balance === null || data.balance === undefined;
+        const balance = (data.balance === null || data.balance === undefined) ? 0 : data.balance;
 
-        const headerEl = document.getElementById('headerBalance');
-        headerEl.textContent = isEmpty ? '??' : data.balance;
-        headerEl.classList.toggle('unknown', isEmpty);
-
+        document.getElementById('headerBalance').textContent = balance;
         const adminEl = document.getElementById('currentBalance');
-        if (adminEl) {
-          adminEl.textContent = isEmpty ? '??' : data.balance;
-          adminEl.classList.toggle('unknown', isEmpty);
-        }
+        if (adminEl) adminEl.textContent = balance;
       });
   }
-  loadBalance();
 
-  /* ===== Модальное окно ===== */
-  function openLoginModal() {
-    document.getElementById('loginModal').classList.add('active');
-    document.getElementById('loginUsername').focus();
-    document.getElementById('loginError').classList.add('hidden');
-  }
-
-  function closeLoginModal() {
-    document.getElementById('loginModal').classList.remove('active');
-    document.getElementById('loginUsername').value = '';
-  }
-
-  /* ===== UI админа ===== */
-  function updateAdminUI(username) {
-    const loginBtn = document.getElementById('loginBtn');
-    const tabBtn   = document.getElementById('adminTabBtn');
-
-    if (isAdmin) {
-      loginBtn.classList.add('hidden');
-      tabBtn.classList.remove('hidden');
-      document.getElementById('adminName').textContent = '@' + (username || 'Saintezz7');
-    } else {
-      loginBtn.classList.remove('hidden');
-      tabBtn.classList.add('hidden');
-    }
-  }
-
-  /* ===== Показ панели админа ===== */
+  /* ===== Открыть/Закрыть админку ===== */
   function toggleAdminPanel() {
     const panel = document.getElementById('panel-admin');
     const tabBtn = document.getElementById('adminTabBtn');
@@ -386,39 +333,12 @@
     }
   }
 
-  /* ===== Вход ===== */
-  async function doLogin() {
-    const username = document.getElementById('loginUsername').value.trim();
-    const errEl = document.getElementById('loginError');
-    errEl.classList.add('hidden');
-
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username }),
-    });
-    const data = await res.json();
-
-    if (data.ok) {
-      isAdmin = true;
-      updateAdminUI(username);
-      closeLoginModal();
-      loadBalance();
-      // Автоматически открываем панель после входа
-      document.getElementById('panel-admin').classList.remove('hidden');
-      document.getElementById('adminTabBtn').classList.add('active');
-    } else {
-      errEl.textContent = data.error || 'Ошибка входа';
-      errEl.classList.remove('hidden');
-    }
-  }
-
   /* ===== Выход ===== */
   async function doLogout() {
-    await fetch('/api/logout');
+    await fetch('/api/logout', { method: 'POST' });
     isAdmin = false;
-    updateAdminUI(null);
     document.getElementById('panel-admin').classList.add('hidden');
+    document.getElementById('adminTabBtn').classList.add('hidden');
     document.getElementById('adminTabBtn').classList.remove('active');
     loadBalance();
   }
@@ -456,6 +376,9 @@
       errEl.classList.remove('hidden');
     }
   }
+
+  // Запуск
+  init();
 </script>
 </body>
 </html>
